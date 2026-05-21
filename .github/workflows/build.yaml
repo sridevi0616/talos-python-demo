@@ -1,4 +1,4 @@
-name: Build Python App
+name: Build and Push
 
 on:
   push:
@@ -7,27 +7,25 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      packages: write
+
     steps:
+      - uses: actions/checkout@v4
 
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
 
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-
-    - name: Install packages
-      run: |
-        pip install -r requirements.txt
-
-    - name: Verify app
-      run: |
-        python -m py_compile app.py
-
-    - name: Docker build test
-      run: |
-        docker build -t talos-python-demo .
+      - name: Build and Push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/sridevi0616/talos-python-demo:latest
