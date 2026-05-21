@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "Hello from Talos GitOps demo"
+    return "Hello GitOps Auto Deployment"
 
 @app.route("/health")
 def health():
