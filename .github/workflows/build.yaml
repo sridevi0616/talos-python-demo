@@ -1,0 +1,33 @@
+name: Build Python App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install packages
+      run: |
+        pip install -r requirements.txt
+
+    - name: Verify app
+      run: |
+        python -m py_compile app.py
+
+    - name: Docker build test
+      run: |
+        docker build -t talos-python-demo .
