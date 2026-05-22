@@ -1,13 +1,17 @@
-FROM python:3.12-slim-bookworm
+FROM python:3.12-slim AS builder
 
 WORKDIR /app
 
 COPY requirements.txt .
-
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-EXPOSE 5000
+FROM gcr.io/distroless/python3-debian12
 
-CMD ["python","app.py"]
+WORKDIR /app
+
+COPY --from=builder /usr/local/lib/python3.12 /usr/local/lib/python3.12
+COPY --from=builder /app /app
+
+CMD ["app.py"]
