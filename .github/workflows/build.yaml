@@ -28,6 +28,27 @@ jobs:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GHCR_TOKEN }}
+        
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install analysis tools
+      run: |
+        pip install pylint flake8 bandit
+
+    - name: Run Flake8
+      run: |
+        flake8 app.py
+
+    - name: Run Pylint
+      run: |
+        pylint app.py || true
+
+    - name: Run Bandit Security Scan
+      run: |
+        bandit -r .    
 
     - name: Build and Push Image
       uses: docker/build-push-action@v6
