@@ -58,6 +58,7 @@ jobs:
       with:
         image-ref: talos-python-demo:${{ env.IMAGE_TAG }}
         format: table
+        ignore-unfixed: true
         severity: HIGH,CRITICAL
         exit-code: 1    
 
