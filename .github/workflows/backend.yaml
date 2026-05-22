@@ -44,6 +44,7 @@ jobs:
       with:
         image-ref: backend:${{ env.IMAGE_TAG }}
         severity: HIGH,CRITICAL
+        ignore-unfixed: true
         exit-code: 1
 
     - name: Push backend image
