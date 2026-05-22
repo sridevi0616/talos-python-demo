@@ -43,7 +43,7 @@ jobs:
     - name: Update Deployment YAML
       run: |
         sed -i 's|image:.*|image: ghcr.io/sridevi0616/talos-python-demo:${{ github.sha }}|' \
-        talos-gitops/apps/python-demo/deployment.yaml
+        gitops/apps/python-demo/deployment.yaml
 
     - name: Commit Changes
       run: |
