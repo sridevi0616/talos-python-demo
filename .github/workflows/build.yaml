@@ -6,12 +6,13 @@ on:
       - main
 
 jobs:
+
   build:
 
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
@@ -25,13 +26,33 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GHCR_TOKEN }}
 
-    - name: Build image
-      run: |
-        docker build -t talos-python-demo:scan .
-
-    - name: Push image
+    - name: Build and Push Image
       uses: docker/build-push-action@v6
       with:
         context: .
         push: true
-        tags: ghcr.io/sridevi0616/talos-python-demo:latest
+        tags: ghcr.io/sridevi0616/talos-python-demo:${{ github.sha }}
+
+    - name: Checkout GitOps Repo
+      uses: actions/checkout@v4
+      with:
+        repository: sridevi0616/talos-gitops
+        token: ${{ secrets.GHCR_TOKEN }}
+        path: gitops
+
+    - name: Update Deployment YAML
+      run: |
+        sed -i 's|image:.*|image: ghcr.io/sridevi0616/talos-python-demo:${{ github.sha }}|' \
+        talos-gitops/apps/python-demo/deployment.yaml
+
+    - name: Commit Changes
+      run: |
+        cd gitops
+
+        git config user.name "github-actions"
+        git config user.email "actions@github.com"
+
+        git add .
+        git commit -m "Update image tag"
+
+        git push
