@@ -1,4 +1,4 @@
-name: Build and Push
+name: Multi Service Build
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
 
-  build:
+  backend:
 
     runs-on: ubuntu-latest
 
@@ -28,46 +28,28 @@ jobs:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GHCR_TOKEN }}
-        
-    #- name: Setup Python
-      #uses: actions/setup-python@v5
-      #with:
-        #python-version: '3.12'
 
-    #- name: Install analysis tools
-      #run: |
-        #pip install pylint flake8 bandit
-
-    #- name: Run Flake8
-      #run: |
-        #flake8 app.py
-
-    #- name: Run Pylint
-      #run: |
-        #pylint app.py || true
-
-    #- name: Run Bandit Security Scan
-      #run: |
-        #bandit -r .  
-    - name: Build image locally
+    - name: Build backend image
       run: |
-       docker build -t talos-python-demo:${IMAGE_TAG} .  
-       
-    - name: Trivy Scan
+        docker build \
+        -f Dockerfile.backend \
+        -t backend:${IMAGE_TAG} .
+
+    - name: Trivy Backend Scan
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: talos-python-demo:${{ env.IMAGE_TAG }}
-        format: table
-        ignore-unfixed: true
+        image-ref: backend:${{ env.IMAGE_TAG }}
         severity: HIGH,CRITICAL
-        exit-code: 1    
+        ignore-unfixed: true
+        exit-code: 1
 
-    - name: Push Image
+    - name: Push backend image
       uses: docker/build-push-action@v6
       with:
         context: .
+        file: Dockerfile.backend
         push: true
-        tags: ghcr.io/sridevi0616/talos-python-demo:${{ env.IMAGE_TAG }}
+        tags: ghcr.io/sridevi0616/backend:${{ env.IMAGE_TAG }}
 
     - name: Checkout GitOps Repo
       uses: actions/checkout@v4
@@ -76,12 +58,12 @@ jobs:
         token: ${{ secrets.GHCR_TOKEN }}
         path: gitops
 
-    - name: Update Deployment YAML
+    - name: Update backend deployment
       run: |
-        sed -i 's|image:.*|image: ghcr.io/sridevi0616/talos-python-demo:'"${IMAGE_TAG}"'|' \
-        gitops/apps/python-demo/deployment.yaml
+        sed -i 's|image:.*|image: ghcr.io/sridevi0616/backend:'"${IMAGE_TAG}"'|' \
+        gitops/apps/backend/deployment.yaml
 
-    - name: Commit and Push Changes
+    - name: Push GitOps backend changes
       run: |
         cd gitops
 
@@ -90,6 +72,75 @@ jobs:
 
         git add .
 
-        git commit -m "Update image to ${IMAGE_TAG}" || echo "No changes"
+        git commit -m "Update backend image ${IMAGE_TAG}" || echo "No changes"
+
+        git push
+
+  frontend:
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      packages: write
+
+    env:
+      IMAGE_TAG: v${{ github.run_number }}
+
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - name: Login to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GHCR_TOKEN }}
+
+    - name: Build frontend image
+      run: |
+        docker build \
+        -f Dockerfile.frontend \
+        -t frontend:${IMAGE_TAG} .
+
+    - name: Trivy Frontend Scan
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: frontend:${{ env.IMAGE_TAG }}
+        ignore-unfixed: true
+        severity: HIGH,CRITICAL
+        exit-code: 1
+
+    - name: Push frontend image
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        file: Dockerfile.frontend
+        push: true
+        tags: ghcr.io/sridevi0616/frontend:${{ env.IMAGE_TAG }}
+
+    - name: Checkout GitOps Repo
+      uses: actions/checkout@v4
+      with:
+        repository: sridevi0616/talos-gitops
+        token: ${{ secrets.GHCR_TOKEN }}
+        path: gitops
+
+    - name: Update frontend deployment
+      run: |
+        sed -i 's|image:.*|image: ghcr.io/sridevi0616/frontend:'"${IMAGE_TAG}"'|' \
+        gitops/apps/frontend/deployment.yaml
+
+    - name: Push GitOps frontend changes
+      run: |
+        cd gitops
+
+        git config user.name "github-actions"
+        git config user.email "actions@github.com"
+
+        git add .
+
+        git commit -m "Update frontend image ${IMAGE_TAG}" || echo "No changes"
 
         git push
