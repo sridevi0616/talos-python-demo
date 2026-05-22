@@ -32,7 +32,7 @@ jobs:
     - name: Build backend image
       run: |
         docker build \
-        -f Dockerfile.backend \
+        -f backend/Dockerfile \
         -t backend:${IMAGE_TAG} .
 
     - name: Trivy Backend Scan
@@ -47,7 +47,7 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         context: .
-        file: Dockerfile.backend
+        file: backend/Dockerfile
         push: true
         tags: ghcr.io/sridevi0616/backend:${{ env.IMAGE_TAG }}
 
@@ -101,7 +101,7 @@ jobs:
     - name: Build frontend image
       run: |
         docker build \
-        -f Dockerfile.frontend \
+        -f frontend/Dockerfile \
         -t frontend:${IMAGE_TAG} .
 
     - name: Trivy Frontend Scan
@@ -116,7 +116,7 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         context: .
-        file: Dockerfile.frontend
+        file: frontend/Dockerfile
         push: true
         tags: ghcr.io/sridevi0616/frontend:${{ env.IMAGE_TAG }}
 
