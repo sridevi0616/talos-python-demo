@@ -41,7 +41,7 @@ jobs:
         password: ${{ secrets.GHCR_TOKEN }}
         
 
-    - name: Build and Push Image
+    - name: Build Image
       uses: docker/build-push-action@v6
       with:
         context: .
@@ -51,7 +51,7 @@ jobs:
     - name: Trivy Scan
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: talos-python-demo:${{ env.IMAGE_TAG }}
+        image-ref: ghcr.io/sridevi0616/talos-python-demo:${{ env.IMAGE_TAG }}
         format: table
         severity: HIGH,CRITICAL
         exit-code: 1
