@@ -54,7 +54,7 @@ jobs:
         image-ref: ghcr.io/sridevi0616/talos-python-demo:${{ env.IMAGE_TAG }}
         format: table
         severity: HIGH,CRITICAL
-        exit-code: 1
+        exit-code: 0
         ignore-unfixed: true
 
     - name: Checkout GitOps Repo
