@@ -19,6 +19,7 @@ jobs:
       contents: write
       packages: write
       security-events: write
+      id-token: write
 
     env:
       IMAGE_TAG: v${{ github.run_number }}
@@ -65,6 +66,16 @@ jobs:
         file: backend/Dockerfile
         push: true
         tags: ghcr.io/sridevi0616/backend:${{ env.IMAGE_TAG }}
+        
+    - name: Install Cosign
+      uses: sigstore/cosign-installer@v3
+    - name: Sign Container Image
+      env:
+        COSIGN_EXPERIMENTAL: "true"
+
+      run: |
+        cosign sign --yes \
+        ghcr.io/sridevi0616/backend:${IMAGE_TAG}   
 
     - name: Checkout GitOps Repo
       uses: actions/checkout@v4
