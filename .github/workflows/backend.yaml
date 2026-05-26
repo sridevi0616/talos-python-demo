@@ -58,6 +58,19 @@ jobs:
         severity: HIGH,CRITICAL
         ignore-unfixed: true
         exit-code: 0
+        
+    - name: Generate SBOM
+      uses: anchore/sbom-action@v0
+      with:
+        image: backend:${{ env.IMAGE_TAG }}
+        format: spdx-json
+        output-file: sbom.spdx.json
+
+    - name: Upload SBOM Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sbom
+        path: sbom.spdx.json   
 
     - name: Push backend image
       uses: docker/build-push-action@v6
