@@ -15,7 +15,7 @@ def data():
         "service": "backend",
         "hostname": socket.gethostname(),
         "redis_hits": count,
-        "text": "HIIII"
+        "text": "Helllloooo"
     }
 
 @app.route("/health")
